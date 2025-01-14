@@ -5,6 +5,7 @@ from tkinter import ttk
 
 import utils.constants as constants
 from utils.config import config
+from utils.tools import resource_path
 
 
 class DefaultUI:
@@ -91,6 +92,15 @@ class DefaultUI:
             command=self.update_open_service
         )
         self.open_service_checkbutton.pack(side=tk.LEFT, padx=4, pady=8)
+
+        self.app_port_label = tk.Label(
+            frame_default_open_update_column2, text="端口:", width=3
+        )
+        self.app_port_label.pack(side=tk.LEFT, padx=4, pady=8)
+        self.app_port_entry = tk.Entry(frame_default_open_update_column2, width=8)
+        self.app_port_entry.pack(side=tk.LEFT, padx=4, pady=8)
+        self.app_port_entry.insert(0, config.app_port)
+        self.app_port_entry.bind("<KeyRelease>", self.update_app_port)
 
         frame_default_open_cache = tk.Frame(root)
         frame_default_open_cache.pack(fill=tk.X)
@@ -282,6 +292,19 @@ class DefaultUI:
         )
         self.open_update_time_checkbutton.pack(side=tk.LEFT, padx=4, pady=8)
 
+        self.update_time_position_label = tk.Label(
+            frame_default_open_update_info_column1, text="位置:", width=3
+        )
+        self.update_time_position_label.pack(side=tk.LEFT, padx=4, pady=8)
+        self.update_time_position_combo = ttk.Combobox(frame_default_open_update_info_column1, width=5)
+        self.update_time_position_combo.pack(side=tk.LEFT, padx=4, pady=8)
+        self.update_time_position_combo["values"] = ("顶部", "底部")
+        if config.update_time_position == "bottom":
+            self.update_time_position_combo.current(1)
+        else:
+            self.update_time_position_combo.current(0)
+        self.update_time_position_combo.bind("<<ComboboxSelected>>", self.update_update_time_position)
+
         self.open_url_info_label = tk.Label(
             frame_default_open_update_info_column2, text="显示接口信息:", width=12
         )
@@ -335,6 +358,18 @@ class DefaultUI:
         )
         self.ipv6_support_checkbutton.pack(side=tk.LEFT, padx=4, pady=8)
 
+        frame_time_zone = tk.Frame(root)
+        frame_time_zone.pack(fill=tk.X)
+
+        self.time_zone_label = tk.Label(
+            frame_time_zone, text="时区:", width=12
+        )
+        self.time_zone_label.pack(side=tk.LEFT, padx=4, pady=8)
+        self.time_zone_entry = tk.Entry(frame_time_zone, width=18)
+        self.time_zone_entry.pack(side=tk.LEFT, padx=4, pady=8)
+        self.time_zone_entry.insert(0, config.time_zone)
+        self.time_zone_entry.bind("<KeyRelease>", self.update_time_zone)
+
         frame_default_url_keywords = tk.Frame(root)
         frame_default_url_keywords.pack(fill=tk.X)
         frame_default_url_keywords_column1 = tk.Frame(frame_default_url_keywords)
@@ -368,6 +403,9 @@ class DefaultUI:
 
     def update_open_service(self):
         config.set("Settings", "open_service", str(self.open_update_var.get()))
+
+    def update_app_port(self, event):
+        config.set("Settings", "app_port", self.app_port_entry.get())
 
     def update_open_use_old_result(self):
         config.set(
@@ -418,6 +456,9 @@ class DefaultUI:
     def update_urls_limit(self, event):
         config.set("Settings", "urls_limit", self.urls_limit_entry.get())
 
+    def update_time_zone(self, event):
+        config.set("Settings", "time_zone", self.time_zone_entry.get())
+
     def update_open_update_time(self):
         config.set("Settings", "open_update_time", str(self.open_update_time_var.get()))
 
@@ -437,30 +478,40 @@ class DefaultUI:
     def update_ipv_type(self, event):
         config.set("Settings", "ipv_type", self.ipv_type_combo.get())
 
+    def update_update_time_position(self, event):
+        config.set("Settings", "update_time_position",
+                   'bottom' if self.update_time_position_combo.get() == '底部' else 'top')
+
     def edit_whitelist_file(self):
-        if os.path.exists(constants.whitelist_path):
-            os.system(f'notepad.exe {constants.whitelist_path}')
+        path = resource_path(constants.whitelist_path)
+        if os.path.exists(path):
+            os.system(f'notepad.exe {path}')
 
     def edit_blacklist_file(self):
-        if os.path.exists(constants.blacklist_path):
-            os.system(f'notepad.exe {constants.blacklist_path}')
+        path = resource_path(constants.blacklist_path)
+        if os.path.exists(path):
+            os.system(f'notepad.exe {path}')
 
     def change_entry_state(self, state):
         for entry in [
             "open_update_checkbutton",
             "open_service_checkbutton",
+            "app_port_entry",
             "open_use_old_result_checkbutton",
             "open_use_cache_checkbutton",
             "open_request_checkbutton",
             "open_driver_checkbutton",
             "open_proxy_checkbutton",
+            "request_timeout_entry",
             "source_file_entry",
             "source_file_button",
+            "time_zone_entry",
             "final_file_entry",
             "final_file_button",
             "open_keep_all_checkbutton",
             "open_m3u_result_checkbutton",
             "urls_limit_entry",
+            "update_time_position_combo",
             "open_update_time_checkbutton",
             "open_url_info_checkbutton",
             "open_empty_category_checkbutton",
